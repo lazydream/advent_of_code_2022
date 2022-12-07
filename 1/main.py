@@ -1,12 +1,15 @@
 from get_file import *
 
 
+input_lines = get_input(get_path(__file__))
+
+
 # #1
 def count_calories():
     max_calories = 0
     temp_max = 0
 
-    for line in get_input(get_path(__file__)):
+    for line in input_lines:
         if line:
             temp_max += int(line)
         else:
@@ -21,7 +24,7 @@ def count_top3():
     calories_data = []
     temp_max = 0
 
-    for line in get_input(get_path(__file__)):
+    for line in input_lines:
         if line:
             temp_max += int(line)
         else:
