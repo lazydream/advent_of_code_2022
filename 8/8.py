@@ -24,9 +24,8 @@ def _get_slices(i, j):
         slice_left_ordered.append(grid[i][k])
     
     slice_top_ordered = []
-    vertical_sliced_grid = grid[:i]
     for k in range(i - 1, -1, -1):
-        slice_top_ordered.append(vertical_sliced_grid[k][j])
+        slice_top_ordered.append(grid[k][j])
 
     return slice_left_ordered, slice_right, slice_bottom, slice_top_ordered
 
