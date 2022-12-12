@@ -4,60 +4,56 @@ import os
 script_path = os.path.dirname(os.path.realpath(__file__))
 input_file = os.path.join(script_path, "input.txt")
 
-tail_visited_positions = 0
+visited_1 = {(0, 0)}
+visited_2 = {(0, 0)}
+
+
+def align_tail(head, tail, track=0):
+    c_map = {
+        1: 0,
+        0: 1
+    }
+    for i in range(2):
+        current_diff = abs(head[i] - tail[i])
+        j = c_map[i]
+        opposite_diff = abs(head[j] - tail[j])
+        if current_diff == 2:
+            tail[i] = tail[i] - 1 if tail[i] > head[i] else tail[i] + 1
+            if opposite_diff in (1,2):
+                tail[j] = tail[j] - 1 if tail[j] > head[j] else tail[j] + 1
+            if track == 1:
+                visited_1.add((tail[0], tail[1]))
+            if track == 2:
+                visited_2.add((tail[0], tail[1]))
 
 with open(input_file, "r") as file:
-  i, j, ti, tj = "i", "j", "ti", "tj"
+    knots = [[0, 0] for _ in range(10)]
 
-  visited = set((0, 0))
+    for line in file:
+        line = line.strip().split(" ")
+        direction, steps = line[0], int(line[1])
+        if direction == "L":
+            vector = (0, -1)
+        elif direction == "R":
+            vector = (0, 1)
+        elif direction == "U":
+            vector = (1, 1)
+        elif direction == "D":
+            vector = (1, -1)
 
-  tail_map = {
-    i: ti,
-    j: tj
-  }
+        for k in range(steps):
+            head = knots[len(knots) - 1]
+            tail = knots[len(knots) - 2]
+            head[vector[0]] += 1 * vector[1]
+            align_tail(head, tail, track=1)
+            for i in range(len(knots) - 2, 1, -1):
+                local_head = knots[i]
+                local_tail = knots[i - 1]
+                align_tail(local_head, local_tail)
 
-  pp = {
-    i: j,
-    ti: tj
-  }
+            latter_head = knots[1]
+            latter_tail = knots[0]
+            align_tail(latter_head, latter_tail, track=2)
 
-  p = {
-    i: 0,
-    j: 0,
-    ti: 0,
-    tj: 0,
-  }
-  
-  for line in file:
-    line = line.strip().split(" ")
-    direction, steps = line[0], int(line[1])
-    if direction == "L":
-      vector = (i, -1)
-    elif direction == "R":
-      vector = (i, 1)
-    elif direction == "U":
-      vector = (j, 1)
-    elif direction == "D":
-      vector = (j, -1)
-
-    for k in range(steps):
-      p[vector[0]] += 1 * vector[1]
-      i_diff = abs(p[i] - p[ti])
-      j_diff = abs(p[j] - p[tj])
-      if not(i_diff == 2 or j_diff == 2):
-        continue
-      if i_diff == 2 and j_diff == 1:
-        p[ti] += 1 * vector[1]
-        p[tj] = p[j]
-        visited.add((p[ti], p[tj]))
-        continue
-      if j_diff == 2 and i_diff == 1:
-        p[tj] += 1 * vector[1]
-        p[ti] = p[i]
-        visited.add((p[ti], p[tj]))
-        continue
-
-      p[tail_map[vector[0]]] += 1 * vector[1]
-      visited.add((p[ti], p[tj]))
-      
-print(len(visited))
+print(len(visited_1))
+print(len(visited_2))
