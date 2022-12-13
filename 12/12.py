@@ -4,70 +4,50 @@ from string import ascii_lowercase
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 input_file = os.path.join(script_path, "input.txt")
-height_map = {c: i for i in ascii_lowercase}
+height_map = {c: i for i, c in enumerate(ascii_lowercase)}
 height_map["S"] = height_map["a"]
 height_map["E"] = height_map["z"]
-graph_map = dict()
 
 
-class Graph:
-    def __init__(self, val: str, key: tuple[int, int]) -> None:
-        self.val = val
-        self.key = key
-        self.adjacent = dict()
-    
-    def add_neighbour(self, graph: 'Graph') -> None:
-        self.adjacent[graph.key] = graph
-
-    def has_neighbour(self, key: tuple[int, int]) -> bool:
-        return key in self.adjacent
-
-
-def _get_connected_graphs(i: int, j: int) -> list[Graph]:
-    cur_height = height_map[grid[i][j]]
-    connected_graphs = []
-    for ni, nj in ((i+1, j), (i - 1, j), (i, j + 1), (i, j - 1)):
-        if ni >= 0 and nj >= 0:
-            if cur_height >= height_map[grid[ni][nj]] - 1:
-                graph = _get_or_create_graph(ni, nj)
-                connected_graphs.append(graph)
-
-
-def _get_or_create_graph(i, j) -> Graph:
-    if (i, j) not in graph_map:
-        graph = Graph(c, (i, j))
-        graph_map[(i, j)] = graph
-    else:
-        graph = graph_map[(i, j)]
-    return graph
-
-
+start = None
+starts = []
+end = None
 grid = []
-visited = set()
-start_graph = None
-# end_position = None
 with open(input_file, "r") as file:
     for i, line in enumerate(file):
-        line = line.strip()
-        for j, c in enumerate(line):
-            graph = _get_or_create_graph(i, j)
-            for connected_graph in _get_connected_graphs(i, j):
-                if not graph.has_neighbour(connected_graph.key):
-                    graph.add_neighbour(graph)
-                else:
-                    print("check is needed")
-            if graph.val == "S":
-                start_graph = graph
+        row = []
+        for j, c in enumerate(line.strip()):
+            if c == "S":
+                start = (i, j)
+                starts.append(start)
+            elif c == "E":
+                end = (i, j)
+            elif c == "a":
+                starts.append((i, j))
+            row.append(c)
+        grid.append(row)
 
 
-distance_map = {
-    start_graph.key: 0
-}
+def flood(dist_map, layer, current_distance) -> None:
+    connections = set()
+    for i, j in layer:
+        for ni, nj in ((i + 1, j), (i - 1, j), (i, j - 1), (i, j + 1)):
+            if ni >= 0 and ni < len(grid) and nj > 0 and nj < len(grid[0]) and height_map[grid[i][j]] >= height_map[grid[ni][nj]] - 1 and (ni, nj) not in dist_map:
+                connections.add((ni, nj))
+
+    for i, j in connections:
+        dist_map[(i, j)] = current_distance + 1
+    if connections:
+        flood(dist_map, connections, current_distance + 1)
 
 
-def djkstra_req(graph: Graph) -> None:
-    for connected_graph in graph.adjacent.values():
-        if connected_graph.key not in visited:
-            cur_distance = distance_map[graph.key] + 1
-            distance_map[connected_graph.key] = cur_distance
-    visited.add(graph.key)
+def distance(start, end):
+    dist_map = {
+        start: 0
+    }
+    flood(dist_map, {start}, 0)
+    return dist_map.get(end, None)
+
+
+print(distance(start, end))
+print(min(distance(start, end) for start in starts if distance(start, end)))
