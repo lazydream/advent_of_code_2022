@@ -63,7 +63,6 @@ for i in range(length):
     max_head_row, max_tail_row, max_head_column, max_tail_column = [-1] * 4
     for jth_tree in range(length):
         if ith_row[jth_tree].value > max_head_row:
-            print(max_head_row)
             ith_row[jth_tree].visible = True
             max_head_row = ith_row[jth_tree].value
         if ith_row[-jth_tree - 1].value > max_tail_row:
