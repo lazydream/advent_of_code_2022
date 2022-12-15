@@ -2,33 +2,37 @@
 import os
 
 script_path = os.path.dirname(os.path.realpath(__file__))
-input_file = os.path.join(script_path, "input_1.txt")
+input_file = os.path.join(script_path, "input.txt")
 
 
-def parse_list(slice):
+def _parse_list(slice):
     lst = None
     i = 0
+    n = []
     while i < len(slice):
         c = slice[i]
         shift = 1
         if c == ",":
-            pass
+            if n:
+                lst.append(int("".join(n)))
+            n = []
         elif c == "[":
             if lst is None:
                 lst = []
             else:
-                shift, inner_list = parse_list(slice[i:])
+                shift, inner_list = _parse_list(slice[i:])
                 lst.append(inner_list)
         elif c == "]":
+            if n:
+                lst.append(int("".join(n)))
             return i + 1, lst
         else:
-            elem = int(slice[i])
-            lst.append(elem)
+            n.append(c)
         i += shift
 
 
 def check_order(left_signal, right_signal) -> bool:
-    i = 0 
+    i = 0
     rl = len(right_signal)
     while i < len(left_signal):
         if rl - 1 < i:
@@ -63,9 +67,9 @@ with open(input_file, "r") as file:
     for line in file:
         if pair_count < 2:
             line = line.strip()
-            _, signal = parse_list(line)
+            _, signal = _parse_list(line)
             pair.append(signal)
-            pair_count += 1  
+            pair_count += 1
         else:
             if check_order(pair[0], pair[1]):
                 s += total_pair_count
